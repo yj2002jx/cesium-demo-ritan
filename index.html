@@ -1,40 +1,82 @@
 <!DOCTYPE html>
-<html lang="zh‑CN">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF‑8">
-    <meta name="viewport" content="width=device‑width, initial‑scale=1.0">
-    <title>Cesium北京日坛三维可视化Demo</title>
-    <!--CDN引入Cesium，不用本地下载庞大库文件-->
+    <meta charset="utf-8">
+    <title>日坛三维可视化 | Cesium Demo</title>
     <script src="https://cdn.jsdelivr.net/npm/cesium@1.119/Build/Cesium/Cesium.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/cesium@1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
     <style>
-        html,body{margin:0;padding:0;height:100%;overflow:hidden;}
-        #cesiumContainer{width:100%;height:100%;}
-        .tool‑bar{position:absolute;top:10px;left:10px;z‑index:999;}
-        button{padding:6px 12px;margin:2px;background:#fff;border:1px solid #999;border‑radius:4px;cursor:pointer;}
+        html,body,#cesiumContainer{width:100%;height:100%;margin:0;padding:0;overflow:hidden;}
+        /* 底图切换按钮面板 */
+        .layer-panel{
+            position:absolute;top:15px;left:15px;z-index:999;
+            background:#fff;padding:10px;border-radius:6px;box-shadow:0 2px 8px #0003;
+        }
+        .layer-panel button{margin:4px;padding:6px 10px;cursor:pointer;}
     </style>
 </head>
 <body>
-    <div class="tool‑bar">
-        <button id="btn‑vec">矢量底图</button>
-        <button id="btn‑img">卫星影像</button>
-    </div>
     <div id="cesiumContainer"></div>
+    <div class="layer-panel">
+        <button id="btnImagery">天地图影像</button>
+        <button id="btnVector">天地图矢量</button>
+        <button id="btnDefault">Cesium默认底图</button>
+    </div>
 
-    <script>
-        // --------------------------【替换为你自己申请的token】--------------------------
-        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImtMNnNXcXpqamU5b2dvN2wiLCJqdGkiOiIxZWFlNGRiMC1lNjRiLTQxNTktOTY4ZS1hZDgzYzIxZWEzY2IiLCJpZCI6NTIwMDY5LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3OTE2ODg2MDZ9.5uEtL35DKgB3ce63mFrqVmPioLJZWUpTOQlgBn_Wt1U";
-        const viewer = new Cesium.Viewer('cesiumContainer',{
-            animation:false,
-            timeline:false
-        });
-        //镜头飞到北京日坛公园 经纬度：116.434,39.922，高度1200米
-        viewer.camera.flyTo({
-            destination : Cesium.Cartesian3.fromDegrees(116.434, 39.922, 1200),
-            duration:2
-        });
+<script>
+// 你的天地图key，去天地图官网申请，替换引号内内容
+const TIANDITU_KEY = "b72a35ba439ee31820f02c448b2c7b79";
+Cesium.Ion.defaultAccessToken = Cesium.Ion.defaultAccessToken;
 
-        //后续Day3‑4新增的功能代码写在这里
-    </script>
+const viewer = new Cesium.Viewer('cesiumContainer',{
+    terrain: Cesium.Terrain.fromWorldTerrain(),
+});
+viewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(116.442,39.922,1200),
+    orientation: {heading: Cesium.Math.toRadians(0),pitch: Cesium.Math.toRadians(-45),roll:0},
+    duration:2
+});
+
+// 保存图层实例
+let tdtImgLayer, tdtVecLayer;
+
+// 天地图影像
+function showTdtImagery(){
+    viewer.imageryLayers.removeAll();
+    tdtImgLayer = viewer.imageryLayers.addImageryProvider(new Cesium.WebMapTileServiceImageryProvider({
+        url: `https://t0.tianditu.gov.cn/img_w/wmts?tk=${TIANDITU_KEY}`,
+        layer: "img",style:"default",format:"tiles",tileMatrixSetID:"w",
+        maximumLevel:18
+    }));
+}
+// 天地图矢量
+function showTdtVector(){
+    viewer.imageryLayers.removeAll();
+    tdtVecLayer = viewer.imageryLayers.addImageryProvider(new Cesium.WebMapTileServiceImageryProvider({
+        url: `https://t0.tianditu.gov.cn/vec_w/wmts?tk=${TIANDITU_KEY}`,
+        layer: "vec",style:"default",format:"tiles",tileMatrixSetID:"w",
+        maximumLevel:18
+    }));
+    // 矢量中文标注
+    viewer.imageryLayers.addImageryProvider(new Cesium.WebMapTileServiceImageryProvider({
+        url:`https://t0.tianditu.gov.cn/cva_w/wmts?tk=${TIANDITU_KEY}`,
+        layer:"cva",style:"default",format:"tiles",tileMatrixSetID:"w",maximumLevel:18
+    }))
+}
+// 默认底图
+function showDefault(){
+    viewer.imageryLayers.removeAll();
+    viewer.imageryLayers.addImageryProvider(Cesium.createWorldImagery());
+}
+
+// 绑定按钮事件
+document.getElementById("btnImagery").onclick = showTdtImagery;
+document.getElementById("btnVector").onclick = showTdtVector;
+document.getElementById("btnDefault").onclick = showDefault;
+
+// =====预留功能：点击查询GeoJSON属性（后续实现）=====
+// =====预留功能：缓冲区空间分析可视化（后续实现）=====
+</script>
 </body>
 </html>
+
