@@ -43,7 +43,7 @@ const viewer = new Cesium.Viewer('cesiumContainer',{
     baseLayerPicker:false
 });
 viewer.camera.flyTo({
-    destination: Cesium.Cartesian3.fromDegrees(116.4403,39.9212,800),
+    destination: Cesium.Cartesian3.fromDegrees(116.4382,39.9156,1100),
     orientation: {heading: Cesium.Math.toRadians(0),pitch: Cesium.Math.toRadians(-45),roll:0},
     duration:2
 });
@@ -105,11 +105,11 @@ const geojsonData = {
             "geometry": {
                 "type":"Polygon",
                 "coordinates":[[
-                    [116.4381,39.9227],
-                    [116.4416,39.9227],
-                    [116.4418,39.9200],
-                    [116.4383,39.9198],
-                    [116.4381,39.9227]
+                    [116.4362, 39.9170],
+                    [116.4403, 39.9170],
+                    [116.4403, 39.9142],
+                    [116.4362, 39.9142],
+                    [116.4362, 39.9170]
                 ]]
             }
         }
