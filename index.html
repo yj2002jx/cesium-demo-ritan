@@ -26,6 +26,7 @@
         <button id="btnImagery">天地图影像</button>
         <button id="btnVector">天地图矢量</button>
         <button id="btnDefault">Cesium默认底图</button>
+        <button id="btnBuffer">开启缓冲区分析(500m)</button>
     </div>
     <!-- 点击查询弹窗 -->
     <div class="popup" id="popup">
@@ -50,10 +51,12 @@ viewer.camera.flyTo({
 showDefault();
 
 let tdtImgLayer, tdtVecLayer;
+let bufferEntity = null;
+let bufferMode = false;
 
 // 天地图影像
 function showTdtImagery(){
-    if(!TIANDITU_KEY || TIANDITU_KEY === "在此填入你的天地图KEY"){
+    if(!TIANDITU_KEY || TIANDITU_KEY === "b72a35ba439ee31820f02c448b2c7b79"){
         alert("请先配置天地图TK密钥");
         return;
     }
@@ -65,7 +68,7 @@ function showTdtImagery(){
 }
 // 天地图矢量
 function showTdtVector(){
-    if(!TIANDITU_KEY || TIANDITU_KEY === "b72a35ba439ee31820f02c448b2c7b79"){
+    if(!TIANDITU_KEY || TIANDITU_KEY === "在此填入你的天地图KEY"){
         alert("请先配置天地图TK密钥");
         return;
     }
@@ -90,6 +93,15 @@ function showDefault(){
 document.getElementById("btnImagery").onclick = showTdtImagery;
 document.getElementById("btnVector").onclick = showTdtVector;
 document.getElementById("btnDefault").onclick = showDefault;
+// 缓冲区开关
+document.getElementById("btnBuffer").onclick = function(){
+    bufferMode = !bufferMode;
+    this.innerText = bufferMode ? "关闭缓冲区分析" : "开启缓冲区分析(500m)";
+    if(!bufferMode && bufferEntity){
+        viewer.entities.remove(bufferEntity);
+        bufferEntity = null;
+    }
+}
 
 // ========== 加载GeoJSON面要素 + 点击查询弹窗 ==========
 const geojsonData = {
@@ -117,13 +129,34 @@ Cesium.GeoJsonDataSource.load(geojsonData).then(ds=>{
         entity.polygon.outlineColor = Cesium.Color.BLUE;
     })
 })
-// 点击拾取要素
+
+// 点击拾取要素 / 缓冲区绘制
 const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 const popup = document.getElementById("popup");
 const popupContent = document.getElementById("popupContent");
 handler.setInputAction(function(event){
     const pick = viewer.scene.pick(event.position);
+    const ray = viewer.camera.getPickRay(event.position);
+    const cartesian = viewer.scene.globe.pick(ray, viewer.scene);
     popup.style.display = "none";
+
+    // 缓冲区模式优先
+    if(bufferMode && Cesium.defined(cartesian)){
+        if(bufferEntity) viewer.entities.remove(bufferEntity);
+        bufferEntity = viewer.entities.add({
+            position : cartesian,
+            ellipse : {
+                semiMajorAxis : 500,
+                semiMinorAxis : 500,
+                material : Cesium.Color.ORANGE.withAlpha(0.3),
+                outline:true,
+                outlineColor:Cesium.Color.ORANGE
+            }
+        });
+        return;
+    }
+
+    // 属性查询模式
     if(Cesium.defined(pick) && Cesium.defined(pick.id) && pick.id.properties){
         const props = pick.id.properties;
         popupContent.innerHTML = `
@@ -137,3 +170,4 @@ handler.setInputAction(function(event){
 </script>
 </body>
 </html>
+
