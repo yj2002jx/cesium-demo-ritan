@@ -56,10 +56,6 @@ let bufferMode = false;
 
 // 天地图影像
 function showTdtImagery(){
-    if(!TIANDITU_KEY || TIANDITU_KEY === "b72a35ba439ee31820f02c448b2c7b79"){
-        alert("请先配置天地图TK密钥");
-        return;
-    }
     viewer.imageryLayers.removeAll();
     tdtImgLayer = viewer.imageryLayers.addImageryProvider(new Cesium.WebMapTileServiceImageryProvider({
         url: `https://t0.tianditu.gov.cn/img_w/wmts?tk=${TIANDITU_KEY}`,
@@ -68,10 +64,6 @@ function showTdtImagery(){
 }
 // 天地图矢量
 function showTdtVector(){
-    if(!TIANDITU_KEY || TIANDITU_KEY === "b72a35ba439ee31820f02c448b2c7b79"){
-        alert("请先配置天地图TK密钥");
-        return;
-    }
     viewer.imageryLayers.removeAll();
     tdtVecLayer = viewer.imageryLayers.addImageryProvider(new Cesium.WebMapTileServiceImageryProvider({
         url: `https://t0.tianditu.gov.cn/vec_w/wmts?tk=${TIANDITU_KEY}`,
